@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hate Speech Detection</title>
+</head>
+<body>
+    <h1>Hate Speech Detection</h1>
+    <form id="hateSpeechForm">
+        <label for="inputText">Enter a sentence:</label><br>
+        <input type="text" id="inputText" name="inputText"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+    <div id="predictionResult"></div>
+
+    <script>
+        document.getElementById('hateSpeechForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const inputText = document.getElementById('inputText').value;
+            fetch('/predict_hate_speech', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ input_text: inputText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('predictionResult').innerText = `Prediction: ${data.prediction}, Confidence: ${data.confidence}`;
+            });
+        });
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>
