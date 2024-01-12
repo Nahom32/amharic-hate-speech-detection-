@@ -1,43 +1,48 @@
 <!DOCTYPE html>
- <html lang="en">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Hate Speech Detection</title>
-     <style>
-         body {
-             font-family: Arial, sans-serif;
-             margin: 0;
-             padding: 0;
-             display: flex;
-             flex-direction: column;
-             align-items: center;
-             justify-content: center;
-             height: 100vh;
-             background-color: black;
-             color: white;
-         }
-         .container {
-             /* text-align: center; */
-         }
-         .prediction-result {
-             margin-top: 20px;
-             padding: 10px;
-             /* {% comment %} border: 1px solid #ddd; {% endcomment %} */
-             border-radius: 5px;
-              transition: max-height 0.5s ease-in-out; 
-         }
+<html lang="en">
 
-         
-         
-         .hate-speech {
-             color: red;
-         }
-         .not-hate-speech {
-             color: green;
-         }
-         #hateSpeechForm input[type="submit"] {
-            background-color:  blue;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hate Speech Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: black;
+            color: white;
+        }
+
+        .container {
+            /* text-align: center; */
+        }
+
+        .prediction-result {
+            margin-top: 20px;
+            padding: 10px;
+            /* {% comment %} border: 1px solid #ddd; {% endcomment %} */
+            border-radius: 5px;
+            transition: max-height 0.5s ease-in-out;
+        }
+
+
+
+        .hate-speech {
+            color: red;
+        }
+
+        .not-hate-speech {
+            color: green;
+        }
+
+        #hateSpeechForm input[type="submit"] {
+            background-color: blue;
             color: white;
             padding: 10px 15px;
             text-align: center;
@@ -46,72 +51,99 @@
             font-size: 16px;
             margin: 4px 2px;
             cursor: pointer;
-            border-style:none;
-            border-radius:1rem;
+            border-style: none;
+            border-radius: 1rem;
         }
-        textarea{
+
+        textarea {
             background-color: #fff;
             border: 3px solid #ddd;
             border-radius: 4px;
         }
-         .input-box{
-             display: flex;
-             flex-direction: column;
-             align-items: flex-start;
-             /* justify-content: center;
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            /* justify-content: center;
              align-items: center; */
-         }
-         .input-form{
-             width: 50vw;
-         }
-         .loading{
-            color :blue;
-            margin-top: 20px;
-            padding: 10px;
-         }
-     </style>
- </head>
- <body>
-     <div class="container">
-         <h1>የአማርኛ የጥላቻ ንግግር ጠቋሚ</h1>
-         <form id="hateSpeechForm" method="post">
-             {% csrf_token %}
-             <div class="input-box">
-             <label for="inputText">አንድ ዓረፍተ ነገር አስገባ</label><br>
-             <textarea class="input-form" type="text" id="inputText" name="inputText" rows="3" ></textarea><br><br>
-             </div>
-             <input type="submit" value="የጥላቻ ንግግርን ለይ">
-         </form>
-         <div id="predictionResult" class="prediction-result"></div>
-     </div>
-     <script>
-         document.getElementById('hateSpeechForm').addEventListener('submit', function(event) {
-             event.preventDefault();
-             const resultDiv = document.getElementById('predictionResult');
-             resultDiv.innerHTML = `<div>Loading</div>`;
-             resultDiv.className = 'loading';
+        }
+
+        .input-form {
+            width: 50vw;
+        }
+        .spinner {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+        }
+
+        .spinner:after {
+            content: ' ';
+            display: block;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border-radius: 50%;
+            border: 6px solid teal;
+            border-color: teal transparent teal transparent;
+            animation: spinner 1.2s linear infinite;
+        }
+
+        @keyframes spinner {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>የአማርኛ የጥላቻ ንግግር ጠቋሚ</h1>
+        <form id="hateSpeechForm" method="post">
+            {% csrf_token %}
+            <div class="input-box">
+                <label for="inputText">አንድ ዓረፍተ ነገር አስገባ</label><br>
+                <textarea class="input-form" type="text" id="inputText" name="inputText" rows="3"></textarea><br><br>
+            </div>
+            <input type="submit" value="የጥላቻ ንግግርን ለይ">
+        </form>
+        <div id="predictionResult" class="prediction-result"></div>
+    </div>
+    <script>
+        document.getElementById('hateSpeechForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const resultDiv = document.getElementById('predictionResult');
+            resultDiv.innerHTML = `<div></div>`;
+            resultDiv.className = 'spinner';
 
 
-             const inputText = document.getElementById('inputText').value;
-             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-             fetch('', {
-                 method: 'POST',
-                 headers: {
-                     'Content-Type': 'application/x-www-form-urlencoded',
-                     'X-CSRFToken': csrfToken,
-                 },
-                 body: `inputText=${encodeURIComponent(inputText)}`,
-             })
-             .then(response => response.json())
-             .then(data => {
-                 resultDiv.innerHTML = `<div>${data.prediction === 'Hate' ? "ጽሑፉ የጥላቻ ንግግር ይዟል።" : "ጽሑፉ የጥላቻ ንግግር አልያዘም።"}</div>`;
-                 resultDiv.className = data.prediction === "Hate" ? 'prediction-result hate-speech' : 'prediction-result not-hate-speech';
-             })
-             .catch(error => {
-                 console.error('Error:', error);
-                 document.getElementById('predictionResult').innerText = 'Error processing your request. Please try again.';
-             });
-         });
-     </script>
- </body>
- </html>
+            const inputText = document.getElementById('inputText').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch('', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: `inputText=${encodeURIComponent(inputText)}`,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    resultDiv.innerHTML = `<div>${data.prediction === 'Hate' ? "ጽሑፉ የጥላቻ ንግግር ይዟል።" : "ጽሑፉ የጥላቻ ንግግር አልያዘም።"}</div>`;
+                    resultDiv.className = data.prediction === "Hate" ? 'prediction-result hate-speech' : 'prediction-result not-hate-speech';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('predictionResult').innerText = 'Error processing your request. Please try again.';
+                });
+        });
+    </script>
+</body>
+
+</html>
