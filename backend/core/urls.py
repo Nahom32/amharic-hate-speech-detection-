@@ -1,7 +1,6 @@
 from django.urls import path
-from . import views
+from .views import predict_hate_speech
 
 urlpatterns = [
-    path('hate_speech_form/', views.hate_speech_form_view, name='hate_speech_form'),
-    # Add other URL patterns for the core app here
+    path('predict_hate_speech/', predict_hate_speech, name='hate_speech_form'),
 ]

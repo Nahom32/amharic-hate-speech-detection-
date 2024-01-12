@@ -1,11 +1,10 @@
 from django.db import models
 
-# Create your models here.
 class UserInput(models.Model):
     text = models.TextField()
     predicted_class = models.CharField(max_length=20)
-    prediction_confidence = models.FloatField()
+    prediction_confidence = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
+    def str(self):
         return self.text
