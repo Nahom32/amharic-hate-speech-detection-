@@ -4,48 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hate Speech Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+        }
+        .prediction-result {
+            margin-top: 20px;
+            padding: 10px;
+            /* {% comment %} border: 1px solid #ddd; {% endcomment %} */
+            border-radius: 5px;
+        }
+        .hate-speech {
+            color: red;
+        }
+        .not-hate-speech {
+            color: green;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hate Speech Detection</h1>
-    <form id="hateSpeechForm">
-        <label for="inputText">Enter a sentence:</label><br>
-        <input type="text" id="inputText" name="inputText"><br><br>
-        <input type="submit" value="Submit">
-    </form>
-    <div id="predictionResult"></div>
+    <div class="container">
+        <h1>Hate Speech Detection</h1>
+        <form id="hateSpeechForm" method="post">
+            {% csrf_token %}
+            <label for="inputText">Enter a sentence:</label><br>
+            <input type="text" id="inputText" name="inputText"><br><br>
+            <input type="submit" value="Submit">
+        </form>
+        <div id="predictionResult" class="prediction-result"></div>
+    </div>
 
     <script>
         document.getElementById('hateSpeechForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const inputText = document.getElementById('inputText').value;
-            fetch('/predict_hate_speech', {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch('', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
                 },
-                body: JSON.stringify({ input_text: inputText })
+                body: `inputText=${encodeURIComponent(inputText)}`,
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('predictionResult').innerText = `Prediction: ${data.prediction}, Confidence: ${data.confidence}`;
+                const resultDiv = document.getElementById('predictionResult');
+                resultDiv.innerHTML += `<div>Prediction: ${data.prediction}</div>`;
+                resultDiv.className = data.prediction === "Hate" ? 'prediction-result hate-speech' : 'prediction-result not-hate-speech';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('predictionResult').innerText = 'Error processing your request. Please try again.';
             });
         });
-
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
     </script>
 </body>
 </html>
